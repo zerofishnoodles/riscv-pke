@@ -6,6 +6,12 @@
 
 #define MAX_CMDLINE_ARGS 64
 
+// section header type
+#define SHT_SYMTAB 2
+#define SHT_STRTAB 3
+#define SHT_NULL 0
+#define STT_FUNC 2
+
 // elf header structure
 typedef struct elf_header_t {
   uint32 magic;
@@ -36,6 +42,30 @@ typedef struct elf_prog_header_t {
   uint64 memsz;  /* Segment size in memory */
   uint64 align;  /* Segment alignment */
 } elf_prog_header;
+
+// Section segment header
+typedef struct {
+  uint32   sh_name;
+  uint32   sh_type;
+  uint64   sh_flags;
+  uint64   sh_addr;
+  uint64   sh_offset;
+  uint64   sh_size;
+  uint32   sh_link;
+  uint32   sh_info;
+  uint64   sh_addralign;
+  uint64   sh_entsize;
+} Elf64_Shdr;
+
+// symbol table entry struct
+typedef struct {
+  uint32      st_name;
+  unsigned char st_info;
+  unsigned char st_other;
+  uint16      st_shndx;
+  uint64    st_value;
+  uint64      st_size;
+} Elf64_Sym;
 
 #define ELF_MAGIC 0x464C457FU  // "\x7FELF" in little endian
 #define ELF_PROG_LOAD 1

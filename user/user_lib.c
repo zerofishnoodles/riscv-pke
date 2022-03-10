@@ -49,3 +49,9 @@ int printu(const char* s, ...) {
 int exit(int code) {
   return do_user_call(SYS_user_exit, code, 0, 0, 0, 0, 0, 0); 
 }
+
+//lab1_challenge_1
+int print_backtrace(int layer_num){
+  // printu("here\n");
+  return do_user_call(SYS_user_printBacktrace, layer_num, 0,0,0,0,0,0);
+}

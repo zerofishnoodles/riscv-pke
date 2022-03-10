@@ -20,6 +20,7 @@ smode_trap_vector:
     csrrw a0, sscratch, a0
 
     # save the context (user registers) of current process in its trapframe.
+    # use t6 to store which means t6 original data will be lost
     addi t6, a0 , 0
     store_all_registers
 

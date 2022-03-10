@@ -8,6 +8,9 @@
 #include "riscv.h"
 #include "spike_interface/spike_utils.h"
 
+elf_header cur_elf_hdr;  //save elf header for lab1_challenge1 
+spike_file_t elf_path;
+
 typedef struct elf_info_t {
   spike_file_t *f;
   struct process *p;
@@ -123,6 +126,8 @@ void load_bincode_from_host_elf(struct process *p) {
 
   // load elf
   if (elf_load(&elfloader) != EL_OK) panic("Fail on loading elf.\n");
+  cur_elf_hdr = elfloader.ehdr;
+  memcpy(&elf_path, info.f, sizeof(*info.f));
 
   // entry (virtual) address
   p->trapframe->epc = elfloader.ehdr.entry;
@@ -130,5 +135,5 @@ void load_bincode_from_host_elf(struct process *p) {
   // close host file
   spike_file_close( info.f );
 
-  sprint("Application program entry point (virtual address): 0x%lx\n", p->trapframe->epc);
+  // sprint("Application program entry point (virtual address): 0x%lx\n", p->trapframe->epc);
 }
