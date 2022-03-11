@@ -1,6 +1,9 @@
 #include "kernel/riscv.h"
 #include "kernel/process.h"
 #include "spike_interface/spike_utils.h"
+#include "util/string.h"
+
+#define MAX_CODE_SIZE 1000
 
 static void handle_instruction_access_fault() { panic("Instruction access fault!"); }
 
@@ -43,7 +46,30 @@ void print_debug_info() {
     }
   }
 
-  sprint("%s%s%lld", file_path, file_name, line_number);
+    sprint("Runtime error at %s/%s:%lld\n", file_path, file_name, line_number);
+    uint32 file_path_length = strlen(file_path);
+    uint32 file_name_length = strlen(file_name);
+    uint32 file_full_length = file_name_length + file_path_length + 10; 
+    char file_full_path[file_full_length];
+    strcpy(file_full_path, "./\0");
+    strcpy(file_full_path+2, file_path);
+    strcpy(file_full_path+2+file_path_length, "/\0");
+    strcpy(file_full_path+2+file_path_length+1, file_name);
+    // sprint("%s\n", file_full_path);
+    spike_file_t *f = spike_file_open(file_full_path, O_RDONLY, 0);
+    char code[MAX_CODE_SIZE];
+    spike_file_read(f, code, MAX_CODE_SIZE);
+    int cur_line = 0;
+    for(int i=0;i<MAX_CODE_SIZE;i++) {
+      if(code[i] == '\n') {cur_line++; continue;}
+      if(cur_line == line_number-1) {
+        for(int j=i;code[j] != '\n';j++){
+          sprint("%c", code[j]);
+        }
+        sprint("\n");
+        break;
+      }
+    }
   
 }
 
