@@ -23,10 +23,35 @@ static void handle_timer() {
   write_csr(sip, SIP_SSIP);
 }
 
+// this function is going to print the code address which trigger the exception(machine exception)
+void print_debug_info() {
+  uint64 line_number = 0;
+  char *file_path = NULL;
+  char *file_name = NULL;
+
+  // get wrong code address
+  uint64 wrong_addr = read_csr(mepc);
+
+  // get debug info
+  for(uint32 i = 0;i<current->line_ind;i++) {
+    if(current->line[i].addr == wrong_addr) {
+      line_number = current->line[i].line;
+      uint64 filename_ndx = current->line[i].file;
+      file_name = current->file[filename_ndx].file;
+      uint64 filepath_ndx = current->file[filename_ndx].dir;
+      file_path = current->dir[filepath_ndx];
+    }
+  }
+
+  sprint("%s%s%lld", file_path, file_name, line_number);
+  
+}
+
 //
 // handle_mtrap calls cooresponding functions to handle an exception of a given type.
 //
 void handle_mtrap() {
+  print_debug_info();
   uint64 mcause = read_csr(mcause);
   switch (mcause) {
     case CAUSE_MTIMER:

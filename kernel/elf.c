@@ -242,6 +242,44 @@ static size_t parse_args(arg_buf *arg_bug_msg) {
 }
 
 //
+// implement address-line-path mapping table function
+//
+void debug_map_create(elf_ctx *elfloader_p) {
+
+  // find the .debug_line section and data
+
+  elf_sect_header debug_line_sect;
+  elf_header elf_h = (*elfloader_p).ehdr;
+  spike_file_t *elf_spike_file = ((elf_info*)((*elfloader_p).info))->f;
+  uint16 shentsize = elf_h.shentsize;
+  uint16 shnum = elf_h.shnum;
+  uint64 shoff = elf_h.shoff;
+  uint16 shstrndx = elf_h.shstrndx;
+
+  // get section header string table
+  elf_sect_header shstr_sect;
+  spike_file_pread(elf_spike_file, &shstr_sect, shentsize, shoff+shstrndx*shentsize);
+  char shstr_ctl[shstr_sect.size];
+  spike_file_pread(elf_spike_file, shstr_ctl, shstr_sect.size, shstr_sect.offset); // the strtab is arranged as char
+
+  // get .debug_line section head
+  for (uint32 i=0; i<shnum; i++) {
+    elf_sect_header cur;
+    spike_file_pread(elf_spike_file, &cur, shentsize, shoff);
+    if(strcmp(&shstr_ctl[cur.name], ".debug_line") == 0){
+      debug_line_sect = cur;
+    }
+  }
+
+  // get .debug_line section data
+  char debug_data[debug_line_sect.size];
+  spike_file_pread(elf_spike_file, debug_data, debug_line_sect.size, debug_line_sect.offset);
+  
+  // get the mapping
+  make_addr_line(elfloader_p, debug_data, debug_line_sect.size);
+}
+
+//
 // load the elf of user application, by using the spike file interface.
 //
 void load_bincode_from_host_elf(struct process *p) {
@@ -279,27 +317,4 @@ void load_bincode_from_host_elf(struct process *p) {
   spike_file_close( info.f );
 
   sprint("Application program entry point (virtual address): 0x%lx\n", p->trapframe->epc);
-}
-
-//
-// implement address-line-path mapping table function
-//
-void* debug_map_create(elf_ctx *elfloader_p) {
-
-  // find the .debug_line section and data
-  elf_sect_header elf_debug_line;
-  elf_header elf_h = (*elfloader_p).ehdr;
-  spike_file_t *elf_spike_file = ((elf_info*)((*elfloader_p).info))->f;
-  uint16 shentsize = elf_h.shentsize;
-  uint16 shnum = elf_h.shnum;
-  uint64 shoff = elf_h.shoff;
-  uint16 shstrndx = elf_h.shstrndx;
-  // find string table
-  elf_header 
-  for (uint32 i=0; i<shnum; i++) {
-    elf_sect_header cur;
-    spike_file_pread(elf_spike_file, &cur, shentsize, shoff);
-    if(cur.type == )
-  }
-  
 }
