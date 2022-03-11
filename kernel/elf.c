@@ -271,8 +271,35 @@ void load_bincode_from_host_elf(struct process *p) {
   // entry (virtual) address
   p->trapframe->epc = elfloader.ehdr.entry;
 
+  // construct address-line-path mapping table
+  debug_map_create(&elfloader);
+
+
   // close host file
   spike_file_close( info.f );
 
   sprint("Application program entry point (virtual address): 0x%lx\n", p->trapframe->epc);
+}
+
+//
+// implement address-line-path mapping table function
+//
+void* debug_map_create(elf_ctx *elfloader_p) {
+
+  // find the .debug_line section and data
+  elf_sect_header elf_debug_line;
+  elf_header elf_h = (*elfloader_p).ehdr;
+  spike_file_t *elf_spike_file = ((elf_info*)((*elfloader_p).info))->f;
+  uint16 shentsize = elf_h.shentsize;
+  uint16 shnum = elf_h.shnum;
+  uint64 shoff = elf_h.shoff;
+  uint16 shstrndx = elf_h.shstrndx;
+  // find string table
+  elf_header 
+  for (uint32 i=0; i<shnum; i++) {
+    elf_sect_header cur;
+    spike_file_pread(elf_spike_file, &cur, shentsize, shoff);
+    if(cur.type == )
+  }
+  
 }
