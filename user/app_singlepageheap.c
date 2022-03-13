@@ -7,7 +7,7 @@
 #include "util/types.h"
 #include "util/string.h"
 int main(void) {
-  
+
   char str[20] = "hello world.";
   char *m = (char *)better_malloc(100);
   char *p = (char *)better_malloc(50);

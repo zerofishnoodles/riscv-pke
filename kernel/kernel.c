@@ -43,6 +43,26 @@ void load_user_program(process *proc) {
   proc->pagetable = (pagetable_t)alloc_page();
   memset((void *)proc->pagetable, 0, PGSIZE);
 
+  // user memory control block
+  proc->mcb = (mm_struct*)alloc_page();
+  memset(proc->mcb, 0, sizeof(mm_struct));
+  proc->mcb->mm_count = 1; // suppose there is only one process using this mcb
+  proc->mcb->page_dir = proc->pagetable;
+
+  // user virtual memory area, suppose the VMA linked list is smaller than one page.
+  proc->mcb->mmap = (vm_area_struct*)alloc_page();
+  memset(proc->mcb->mmap, 0, sizeof(vm_area_struct));
+
+  // suppose the first and the only vm_area is just the heap for the convenience
+  vm_area_struct *heap = proc->mcb->mmap;
+  heap->vm_start = g_ufree_page;
+  heap->vm_type = VM_HEAP;
+  heap->vm_end = g_ufree_page;
+  heap->vm_mm = proc->mcb;
+  heap->vm_next = NULL;
+  proc->mcb->map_count = 1;  // it is not a good idea!
+  proc->mcb->mmap_cache = heap;
+
   proc->kstack = (uint64)alloc_page() + PGSIZE;   //user kernel stack top
   uint64 user_stack = (uint64)alloc_page();       //phisical address of user stack bottom
   proc->trapframe->regs.sp = USER_STACK_TOP;  //virtual address of user stack top
@@ -64,6 +84,14 @@ void load_user_program(process *proc) {
   // we assume that the size of usertrap.S is smaller than a page.
   user_vm_map((pagetable_t)proc->pagetable, (uint64)trap_sec_start, PGSIZE, (uint64)trap_sec_start,
          prot_to_type(PROT_READ | PROT_EXEC, 0));
+
+  // map mcb in user space (direct mapping)
+  user_vm_map((pagetable_t)proc->pagetable, (uint64)proc->mcb, PGSIZE, (uint64)proc->mcb,
+         prot_to_type(PROT_WRITE | PROT_READ, 0));
+
+  // map VMA linked list in user space(direct mapping)
+  user_vm_map((pagetable_t)proc->pagetable, (uint64)proc->mcb->mmap, PGSIZE, (uint64)proc->mcb->mmap, 
+         prot_to_type(PROT_WRITE | PROT_READ, 0));
 }
 
 //
