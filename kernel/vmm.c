@@ -188,7 +188,7 @@ void user_vm_unmap(pagetable_t page_dir, uint64 va, uint64 size, int free) {
   pte_t *pte = page_walk(page_dir, (uint64)va, 0);
   if (pte == NULL) return;
   void *pa = (void *)PTE2PA(*pte);
-  free_page(pa);
+  if(free) free_page(pa);
   *pte = (*pte)^1;
 
 }
