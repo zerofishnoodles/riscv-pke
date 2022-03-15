@@ -192,7 +192,7 @@ int do_fork( process* parent)
         // DO NOT COPY THE PHYSICAL PAGES, JUST MAP THEM.
         uint64 va = 0;
         for(int i=0;i<parent->total_mapped_region;i++){
-          if(parent->mapped_info[i].seg_type == DATA_SEGMENT){
+          if(parent->mapped_info[i].seg_type == CODE_SEGMENT){
             va = parent->mapped_info[i].va;
           }
         }
