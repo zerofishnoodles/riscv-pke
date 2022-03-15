@@ -71,7 +71,13 @@ typedef struct process {
 
   // accounting
   int tick_count;
+
 }process;
+
+typedef struct semaphore_t{
+  int value;
+  process* wail_list;
+}semaphore;
 
 // switch to run user app
 void switch_to(process*);
