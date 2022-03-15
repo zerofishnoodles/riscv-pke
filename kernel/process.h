@@ -88,5 +88,7 @@ int do_fork(process* parent);
 extern process* current;
 // virtual address of our simple heap
 extern uint64 g_ufree_page;
+// procs pool
+extern process procs[NPROC];
 
 #endif

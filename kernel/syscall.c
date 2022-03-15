@@ -35,6 +35,29 @@ ssize_t sys_user_exit(uint64 code) {
   sprint("User exit with code:%d.\n", code);
   // in lab3 now, we should reclaim the current process, and reschedule.
   free_process( current );
+  if(current->parent == NULL){
+    schedule();
+    return 0;
+  }
+  // find the blocked parent
+  process *pre = blocked_queue_head;
+  process *cur = pre->queue_next;
+  if(current->parent == pre){
+    blocked_queue_head = blocked_queue_head->queue_next;
+    insert_to_ready_queue(pre);
+    schedule();
+    return 0;
+  }
+  while(cur){
+    if(cur == current->parent){
+      pre->queue_next = cur->queue_next;
+      insert_to_ready_queue(cur);
+      schedule();
+      return 0;
+    }
+    pre = cur;
+    cur = cur->queue_next;
+  }
   schedule();
   return 0;
 }
@@ -83,6 +106,51 @@ ssize_t sys_user_yield() {
   return 0;
 }
 
+ssize_t sys_user_wait(int pid) {
+  process *child = NULL;
+  if(pid < -1) return -1;
+
+  if(pid == -1){
+    // find if all the child do exit
+    // if yes, keep going, else blocked
+    int temp_pid=0;
+    for(int i=0;i<NPROC;i++) {
+      if(procs[i].parent == current) temp_pid = procs[i].pid;
+      if(procs[i].parent == current && procs[i].status != ZOMBIE) {
+        child = &procs[i];
+      }
+    }
+    if(child) {
+      current->status = BLOCKED;
+      insert_to_blocked_queue(current);
+      schedule();
+      return child->pid;
+    }
+    return temp_pid;
+
+  }
+
+  if(pid > 0) {
+    int isfind = 0;
+    for(int i=0;i<NPROC;i++) {
+      if(procs[i].parent == current && procs[i].pid == pid) {
+        isfind = 1;
+        child = &procs[i];
+      }
+    }
+    if(!isfind) return -1;
+    if(child->status == ZOMBIE) return pid;
+
+    current->status = BLOCKED;
+    insert_to_blocked_queue(current);
+    schedule();
+    return pid;
+  }
+
+
+  return -1;
+}
+
 //
 // [a0]: the syscall number; [a1] ... [a7]: arguments to the syscalls.
 // returns the code of success, (e.g., 0 means success, fail for otherwise)
@@ -101,6 +169,8 @@ long do_syscall(long a0, long a1, long a2, long a3, long a4, long a5, long a6, l
       return sys_user_fork();
     case SYS_user_yield:
       return sys_user_yield();
+    case SYS_user_wait:
+      return sys_user_wait(a1);
     default:
       panic("Unknown syscall %ld \n", a0);
   }

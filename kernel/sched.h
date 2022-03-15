@@ -7,6 +7,8 @@
 #define TIME_SLICE_LEN  2
 
 void insert_to_ready_queue( process* proc );
+void insert_to_blocked_queue( process* proc);
 void schedule();
 
+extern process* blocked_queue_head;
 #endif
