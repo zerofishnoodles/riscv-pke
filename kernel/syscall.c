@@ -25,9 +25,9 @@ bool is_free_page(mem_block *tar, vm_area_struct *heap){
       heap->mb = NULL;
       heap->vm_end = heap->vm_start;
     }
-    return 1;
+    return TRUE;
   }else{
-    return 0;
+    return FALSE;
   }
 }
 
@@ -127,7 +127,9 @@ uint64 sys_user_allocate_page(uint64 n) {
     heap->mb = mb;
 
     uint64 rva = heap->vm_start+(uint64)mb->vmoff+sizeof(mem_block);
-    // sprint("%x %x %x\n", heap->vm_start, mb->vmoff, rva);
+    // sprint("first:%x\n", mb);
+    // sprint("%lld\n", n);
+    // sprint("seconde:%x\n", mb->next);
     
     // user_vm_map((pagetable_t)current->pagetable, rva, n-sizeof(mem_block), (uint64)(pa+sizeof(mem_block)), prot_to_type(PROT_WRITE | PROT_READ, 1));
     return rva;
@@ -163,6 +165,9 @@ uint64 sys_user_allocate_page(uint64 n) {
     // user_vm_map((pagetable_t)current->pagetable, rva, n-sizeof(mem_block), (uint64)(avail_mb->data), 
     //             prot_to_type(PROT_WRITE | PROT_READ, 1));
       // sprint("here\n");
+    // sprint("%lld\n", n);
+    // sprint("second: %x\n", avail_mb);
+    // sprint("third :%x\n", avail_mb->next);
     return rva;
 
   }else{ 
@@ -174,6 +179,7 @@ uint64 sys_user_allocate_page(uint64 n) {
     // update heap control block
     heap->vm_end = heap->vm_end+PGSIZE;
     avail_mb = (mem_block*)pa;
+
     avail_mb->size = n;
     avail_mb->flags = MB_ALLOCED;
     avail_mb->pre = cur_mb;
@@ -205,7 +211,7 @@ uint64 sys_user_free_page(uint64 va) {
   // only free the memory block
   // first, find the corresbonding mb according to the va
   uint64 pa = lookup_pa(current->pagetable, va);
-  mem_block *tar = (mem_block*)(pa);
+  mem_block *tar = (mem_block*)(pa+((va-sizeof(mem_block))&((1<<PGSHIFT)-1)));
 
   // find the heap memory space
   mm_struct *mcb = current->mcb;
@@ -238,6 +244,7 @@ uint64 sys_user_free_page(uint64 va) {
     if(is_free_page(tar->pre, heap)) return 0;
     else tar->pre->next = tar->next->next;
   }
+
   if(tar->pre == NULL && tar->next->flags == MB_EMPTY) {
     tar->size = tar->size + tar->next->size;
     if(is_free_page(tar, heap)) return 0;

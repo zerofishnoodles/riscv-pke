@@ -85,13 +85,13 @@ void load_user_program(process *proc) {
   user_vm_map((pagetable_t)proc->pagetable, (uint64)trap_sec_start, PGSIZE, (uint64)trap_sec_start,
          prot_to_type(PROT_READ | PROT_EXEC, 0));
 
-  // map mcb in user space (direct mapping)
-  user_vm_map((pagetable_t)proc->pagetable, (uint64)proc->mcb, PGSIZE, (uint64)proc->mcb,
-         prot_to_type(PROT_WRITE | PROT_READ, 0));
+//   // map mcb in user space (direct mapping)
+//   user_vm_map((pagetable_t)proc->pagetable, (uint64)proc->mcb, PGSIZE, (uint64)proc->mcb,
+//          prot_to_type(PROT_WRITE | PROT_READ, 0));
 
-  // map VMA linked list in user space(direct mapping)
-  user_vm_map((pagetable_t)proc->pagetable, (uint64)proc->mcb->mmap, PGSIZE, (uint64)proc->mcb->mmap, 
-         prot_to_type(PROT_WRITE | PROT_READ, 0));
+//   // map VMA linked list in user space(direct mapping)
+//   user_vm_map((pagetable_t)proc->pagetable, (uint64)proc->mcb->mmap, PGSIZE, (uint64)proc->mcb->mmap, 
+//          prot_to_type(PROT_WRITE | PROT_READ, 0));
 }
 
 //
