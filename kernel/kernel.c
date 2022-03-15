@@ -43,6 +43,10 @@ void load_user_program(process *proc) {
   proc->pagetable = (pagetable_t)alloc_page();
   memset((void *)proc->pagetable, 0, PGSIZE);
 
+  proc->kstack = (uint64)alloc_page() + PGSIZE;   //user kernel stack top
+  uint64 user_stack = (uint64)alloc_page();       //phisical address of user stack bottom
+  proc->trapframe->regs.sp = USER_STACK_TOP;  //virtual address of user stack top
+
   // user memory control block
   proc->mcb = (mm_struct*)alloc_page();
   memset(proc->mcb, 0, sizeof(mm_struct));
@@ -62,10 +66,6 @@ void load_user_program(process *proc) {
   heap->vm_next = NULL;
   proc->mcb->map_count = 1;  // it is not a good idea!
   proc->mcb->mmap_cache = heap;
-
-  proc->kstack = (uint64)alloc_page() + PGSIZE;   //user kernel stack top
-  uint64 user_stack = (uint64)alloc_page();       //phisical address of user stack bottom
-  proc->trapframe->regs.sp = USER_STACK_TOP;  //virtual address of user stack top
 
   sprint("user frame 0x%lx, user stack 0x%lx, user kstack 0x%lx \n", proc->trapframe,
          proc->trapframe->regs.sp, proc->kstack);
