@@ -205,6 +205,24 @@ int do_fork( process* parent)
         child->total_mapped_region++;
         break;
       }
+      case DATA_SEGMENT:{
+        // copy the data segement
+        uint64 p_data_va = parent->mapped_info[i].va;
+        uint64 p_data_pa = lookup_pa(parent->pagetable, p_data_va);
+        uint64 c_data_pa = (uint64)alloc_page();
+        uint64 data_npages = parent->mapped_info[i].npages;
+        mapped_region last_map_region = child->mapped_info[child->total_mapped_region-1];
+        uint64 c_data_va = last_map_region.va+last_map_region.npages*PGSIZE;
+        user_vm_map(child->pagetable, c_data_va, data_npages, c_data_pa, prot_to_type(PROT_READ | PROT_WRITE, 1));
+        memcpy((void*)c_data_pa,(void*)p_data_pa, data_npages);
+
+        // register the vm region
+        child->mapped_info[child->total_mapped_region].va = c_data_va;
+        child->mapped_info[child->total_mapped_region].npages = data_npages;
+        child->mapped_info[child->total_mapped_region].seg_type = DATA_SEGMENT;
+        child->total_mapped_region++;
+        break;
+      }
     }
   }
 

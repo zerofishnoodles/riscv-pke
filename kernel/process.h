@@ -73,6 +73,15 @@ typedef struct process {
   int tick_count;
 }process;
 
+typedef struct semaphore_t
+{
+  int sem_id;
+  int value;
+  process *wait_list;
+  uint64 va;
+}semaphore;
+
+
 // switch to run user app
 void switch_to(process*);
 // initialize process pool (the procs[] array)
