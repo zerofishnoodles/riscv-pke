@@ -154,7 +154,7 @@ uint64 sys_user_allocate_page(uint64 n) {
     avail_mb->flags = MB_ALLOCED;
       // sprint("here\n");
     avail_mb->next = avail_mb+n;
-    avail_mb->next->size = avail_mb->size-n;
+    avail_mb->next->size = avail_mb->size-n;  
     avail_mb->next->pre = avail_mb;
     avail_mb->next->next = avail_mb->next;
     avail_mb->next->flags = MB_EMPTY;

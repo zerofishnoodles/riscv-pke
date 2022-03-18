@@ -35,7 +35,7 @@ typedef struct vm_area_struct {
 	//保存VMA标志位
   uint64 vm_flags;		/* Flags, listed below. */  // unused in this lab
 
-  uint64 vm_type;  
+  uint64 vm_type;  // heap, stack. etc
 } vm_area_struct;
 
 
