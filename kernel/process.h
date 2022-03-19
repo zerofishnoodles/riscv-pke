@@ -78,7 +78,6 @@ typedef struct semaphore_t
   int sem_id;
   int value;
   process *wait_list;
-  uint64 va;
 }semaphore;
 
 
